@@ -5,22 +5,24 @@ import { ProgressBar, Col, Row, Card, Table, Image } from 'react-bootstrap';
 // import required data files
 import ActiveProjectsData from "data/dashboard/ActiveProjectsData";
 
-const ActiveProjects = () => {
+const CctvDetails = () => {
     return (
         <Row className="mt-6">
             <Col md={12} xs={12}>
                 <Card>
                     <Card.Header className="bg-white  py-4">
-                        <h4 className="mb-0">Active Projects</h4>
+                        <h4 className="mb-0">CCTVs List</h4>
                     </Card.Header>
                     <Table responsive className="text-nowrap mb-0">
                         <thead className="table-light">
                             <tr>
-                                <th>Project name</th>
-                                <th>Hours</th>
-                                <th>priority</th>
-                                <th>Members</th>
-                                <th>Progress</th>
+                                <th>CCTV Id</th>
+                                <th>Location</th>
+                                <th>Status</th>
+                                <th>Type</th>
+                                <th>Registration Date</th>
+                                <th>Owner</th>
+                                <th>Full Address</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -68,7 +70,7 @@ const ActiveProjects = () => {
                         </tbody>
                     </Table>
                     <Card.Footer className="bg-white text-center">
-                        <Link href="#" className="link-primary">View All Projects</Link>
+                        <Link href="#" className="link-primary">View All CCTVs</Link>
                     </Card.Footer>
                 </Card>
             </Col>
@@ -76,4 +78,4 @@ const ActiveProjects = () => {
     )
 }
 
-export default ActiveProjects
+export default CctvDetails

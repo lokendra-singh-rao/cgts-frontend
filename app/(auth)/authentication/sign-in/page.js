@@ -6,9 +6,20 @@ import Link from 'next/link';
 
 // import hooks
 import useMounted from 'hooks/useMounted';
+import { useState } from 'react';
 
 const SignIn = () => {
+
   const hasMounted = useMounted();
+
+  const [email, setEmail] = useState();
+  const [password, setPassword] = useState();
+
+  //Sign in function
+  const handleSubmit = () => {
+  
+  }
+
   return (
     <Row className="align-items-center justify-content-center g-0 min-vh-100">
       <Col xxl={4} lg={6} md={8} xs={12} className="py-8 py-xl-0">
@@ -25,14 +36,14 @@ const SignIn = () => {
               <Form>
                 {/* Username */}
                 <Form.Group className="mb-3" controlId="username">
-                  <Form.Label>Username</Form.Label>
-                  <Form.Control type="email" name="username" placeholder="Enter address here" required="" />
+                  <Form.Label>Email {email}</Form.Label>
+                  <Form.Control type="email" name="email" placeholder="Enter email here" value={email} onChange={ e => setEmail(e.target.value)} required="true" />
                 </Form.Group>
 
                 {/* Password */}
                 <Form.Group className="mb-3" controlId="password">
-                  <Form.Label>Password</Form.Label>
-                  <Form.Control type="password" name="password" placeholder="**************" required="" />
+                  <Form.Label>Password {password}</Form.Label>
+                  <Form.Control type="password" name="password" placeholder="**************" value={password} onChange={ e => setPassword(e.target.value)} required="true" />
                 </Form.Group>
 
                 {/* Checkbox */}
@@ -45,7 +56,7 @@ const SignIn = () => {
                 <div>
                   {/* Button */}
                   <div className="d-grid">
-                    <Button variant="primary" type="submit">Sign In</Button>
+                    <Button variant="primary" onSubmit={handleSubmit()} type="submit">Sign In</Button>
                   </div>
                   <div className="d-md-flex justify-content-between mt-4">
                     <div className="mb-2 mb-md-0">

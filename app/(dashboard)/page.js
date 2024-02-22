@@ -7,13 +7,9 @@ import { Container, Col, Row } from 'react-bootstrap';
 // import widget/custom components
 import { StatRightTopIcon } from "widgets";
 
-// import sub components
-import { ActiveProjects, Teams, 
-    TasksPerformance 
-} from "sub-components";
-
 // import required data files
 import CctvStats from "data/dashboard/CctvStatsData";
+import CctvDetails from "sub-components/dashboard/ActiveProjects";
 
 const Home = () => {
     return (
@@ -44,23 +40,8 @@ const Home = () => {
                 </Row>
 
                 {/* Active Projects  */}
-                <ActiveProjects />
+                <CctvDetails />
 
-                <Row className="my-6">
-                    <Col xl={4} lg={12} md={12} xs={12} className="mb-6 mb-xl-0">
-
-                        {/* Tasks Performance  */}
-                        <TasksPerformance />
-
-                    </Col>
-                    {/* card  */}
-                    <Col xl={8} lg={12} md={12} xs={12}>
-
-                        {/* Teams  */}
-                        <Teams />
-
-                    </Col>
-                </Row>
             </Container>
         </Fragment>
     )

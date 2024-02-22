@@ -3,12 +3,61 @@
 // import node module libraries
 import { Row, Col, Card, Form, Button, Image } from 'react-bootstrap';
 import Link from 'next/link';
+import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
 
 // import hooks
 import useMounted from 'hooks/useMounted';
 
 const SignUp = () => {
+
   const hasMounted = useMounted();
+  const auth = getAuth();
+  
+  const [fullname, setFullname] = useState();
+  const [email, setEmail] = useState();
+  const [password, setPassword] = useState();  
+  const [confirmPassword, setConfirmPassword] = useState();
+
+  const handleSubmit = async(e) => {
+
+    if(!isPasswordMatch)
+      return
+
+    e.preventDefault()
+
+    try {
+      
+      await createUserWithEmailAndPassword(auth, email, password)
+        .then((userCredential) => {
+          // Signed up 
+          const user = userCredential.user;
+          console.log("User details : ", userCredential)
+          // ...
+        })
+        .catch((error) => {
+          const errorCode = error.code;
+          const errorMessage = error.message;
+          console.log("Error caught in internal catch : ", error.message)
+          // ..
+        });
+
+    } catch (error) {
+      
+      console.log("Error caught in external catch : ", error.message)
+
+    }
+
+  }
+
+  const isPasswordMatch = async(e) => {
+
+    e.preventDefault()
+
+    if(password != confirmPassword)
+      return false;
+
+  }
+
   return (
     <Row className="align-items-center justify-content-center g-0 min-vh-100">
       <Col xxl={4} lg={6} md={8} xs={12} className="py-8 py-xl-0">
@@ -23,28 +72,28 @@ const SignUp = () => {
             {/* Form */}
             {hasMounted && 
             <Form>
-              {/* Username */}
+              {/* Fullname */}
               <Form.Group className="mb-3" controlId="username">
-                <Form.Label>Username or email</Form.Label>
-                <Form.Control type="text" name="username" placeholder="User Name" required="" />
+                <Form.Label>Fullname</Form.Label>
+                <Form.Control type="text" name="fullname" value={fullname} onChange={ e => setFullname(e.target.value)} placeholder="Fullname" required="true" />
               </Form.Group>
 
               {/* Email */}
               <Form.Group className="mb-3" controlId="email">
                 <Form.Label>Email</Form.Label>
-                <Form.Control type="email" name="email" placeholder="Enter address here" required="" />
+                <Form.Control type="email" name="email" value={email} onChange={ e => setEmail(e.target.value)} placeholder="Enter address here" required="true" />
               </Form.Group>
 
               {/* Password */}
               <Form.Group className="mb-3" controlId="password">
                 <Form.Label>Password</Form.Label>
-                <Form.Control type="password" name="password" placeholder="**************" required="" />
+                <Form.Control type="password" name="password" value={password} onChange={ e => setPassword(e.target.value)} placeholder="**************" required="true" />
               </Form.Group>
 
               {/* Confirm Password */}
               <Form.Group className="mb-3" controlId="confirm-password">
                 <Form.Label>Confirm Password</Form.Label>
-                <Form.Control type="password" name="confirm-password" placeholder="**************" required="" />
+                <Form.Control type="password" name="confirm-password" value={confirmPassword} onChange={ e => setConfirmPassword(e.target.value)} placeholder="**************" required="true" />
               </Form.Group>
 
               {/* Checkbox */}
@@ -60,7 +109,7 @@ const SignUp = () => {
               <div>
                 {/* Button */}
                 <div className="d-grid">
-                  <Button variant="primary" type="submit">Create Free Account</Button>
+                  <Button variant="primary" type="submit" onSubmit={handleSubmit()}>Create Free Account</Button>
                 </div>
                 <div className="d-md-flex justify-content-between mt-4">
                   <div className="mb-2 mb-md-0">
