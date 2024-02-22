@@ -18,14 +18,14 @@ const SignIn = () => {
           <Card.Body className="p-6">
             <div className="mb-4">
               <Link href="/"><Image src="/images/brand/logo/logo-primary.svg" className="mb-2" alt="" /></Link>
-              <p className="mb-6">Please enter your user information.</p>
+              <p className="mb-6">Please enter login credentials</p>
             </div>
             {/* Form */}
             {hasMounted &&
               <Form>
                 {/* Username */}
                 <Form.Group className="mb-3" controlId="username">
-                  <Form.Label>Username or email</Form.Label>
+                  <Form.Label>Username</Form.Label>
                   <Form.Control type="email" name="username" placeholder="Enter address here" required="" />
                 </Form.Group>
 

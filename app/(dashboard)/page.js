@@ -13,7 +13,7 @@ import { ActiveProjects, Teams,
 } from "sub-components";
 
 // import required data files
-import ProjectsStatsData from "data/dashboard/ProjectsStatsData";
+import CctvStats from "data/dashboard/CctvStatsData";
 
 const Home = () => {
     return (
@@ -26,15 +26,15 @@ const Home = () => {
                         <div>
                             <div className="d-flex justify-content-between align-items-center">
                                 <div className="mb-2 mb-lg-0">
-                                    <h3 className="mb-0  text-white">Projects</h3>
+                                    <h3 className="mb-0  text-white">CCTV Dashboard</h3>
                                 </div>
                                 <div>
-                                    <Link href="#" className="btn btn-white">Create New Project</Link>
+                                    <Link href="#" className="btn btn-white">Add New CCTV</Link>
                                 </div>
                             </div>
                         </div>
                     </Col>
-                    {ProjectsStatsData.map((item, index) => {
+                    {CctvStats.map((item, index) => {
                         return (
                             <Col xl={3} lg={6} md={12} xs={12} className="mt-6" key={index}>
                                 <StatRightTopIcon info={item} />

@@ -20,7 +20,7 @@ const StatRightTopIcon = props => {
                 </div>
                 <div>
                     <h1 className="fw-bold">{info.value}</h1>
-                    <p className="mb-0" dangerouslySetInnerHTML={{ __html: info.statInfo}}></p>
+                    {/* <p className="mb-0" dangerouslySetInnerHTML={{ __html: info.statInfo}}></p> */}
                 </div>
             </Card.Body>
         </Card>
