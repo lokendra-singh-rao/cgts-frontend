@@ -22,13 +22,13 @@ const Home = () => {
 
   useEffect(() => {
     onAuthStateChanged(auth, (user) => {
-      if (user) {
+      if (user?.emailVerified) {
         console.log("======= uid", user.uid);
       } else {
         router.push('/authentication/sign-in?activationRedirect=false')
       }
     });
-  }, []);
+  }, [router]);
 
   return (
     <Fragment>

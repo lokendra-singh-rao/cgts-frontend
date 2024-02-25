@@ -4,13 +4,15 @@
 import { Row, Col, Card, Form, Button, Image, Alert } from "react-bootstrap";
 import Link from "next/link";
 import { auth } from "components/firebase";
-import { onAuthStateChanged, signInWithEmailAndPassword } from "firebase/auth";
+import { signInWithEmailAndPassword, signOut } from "firebase/auth";
 import { useState } from "react";
 
 // import hooks
 import useMounted from "hooks/useMounted";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
+import axios from "axios";
+import secureLocalStorage from "react-secure-storage";
 
 const SignIn = (req) => {
   const hasMounted = useMounted();
@@ -21,39 +23,64 @@ const SignIn = (req) => {
   const [successLogin, setSuccessLogin] = useState(false);
   const [errorLogin, setErrorLogin] = useState(false);
   const [errorLoginMessage, setErrorLoginMessage] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
 
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [activationRedirect, setActivationRedirect] = useState(false);
 
   useEffect(() => {
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        router.push('/')
-      } else {
+    const user = auth?.currentUser;
+    if (
+      user?.emailVerified &&
+      user?.emailVerified != undefined &&
+      user?.emailVerified != null &&
+      user != null
+    ) {
+      router.push("/");
+    } else {
+      const url = `${pathname}?${searchParams}`;
+      setActivationRedirect(
+        searchParams.get("activationRedirect") == "true" ? true : false
+      );
+
+      if (secureLocalStorage.getItem("rememberMe")) {
+        setEmail(secureLocalStorage.getItem("email"))
+        setRememberMe(true)
       }
-    });
-    const url = `${pathname}?${searchParams}`;
-    setActivationRedirect(
-      searchParams.get("activationRedirect") == "true" ? true : false
-    );
-  }, [pathname, searchParams]);
+    }
+  }, [pathname, searchParams, router]);
 
   //Sign in function
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (rememberMe) {
+      secureLocalStorage.setItem("email", email);
+      secureLocalStorage.setItem("rememberMe", true);
+    } else {
+      secureLocalStorage.setItem("email", "");
+      secureLocalStorage.setItem("rememberMe", false);
+    }
+
+    setActivationRedirect(false);
     setSuccessLogin(false);
     setErrorLogin(false);
     setErrorLoginMessage("");
 
     try {
       signInWithEmailAndPassword(auth, email, password)
-        .then((userCredential) => {
+        .then(async (user) => {
           // Signed in
-          setSuccessLogin(true);
-          router.push('/')
-          
+          if (user?.user?.emailVerified == false) {
+            setErrorLoginMessage(
+              "Verify your email to continue your sign up process!"
+            );
+            setErrorLogin(true);
+            return;
+          } else {
+            await getSignInData(e, user?.user);
+          }
         })
         .catch((error) => {
           // Error Signing in
@@ -67,6 +94,69 @@ const SignIn = (req) => {
         });
     } catch (error) {
       setErrorLogin(true);
+    }
+  };
+
+  const getSignInData = async (e, user) => {
+    e.preventDefault();
+
+    try {
+      let headers = {
+        FirebaseToken: `${user?.accessToken}`,
+      };
+
+      await axios({
+        url: `http://localhost:8081/graphql`,
+        method: "POST",
+        headers: headers,
+        data: {
+          query: `
+          query {
+            signInAdmin {
+              id
+              uid
+              fullname
+              email
+              accountStatus
+              role
+            }
+          }
+          `,
+        },
+      })
+        .then(async (res) => {
+          if (res?.data?.error) {
+            setErrorLogin(true);
+            signOut(auth);
+          } else if (
+            res?.data?.data?.signInAdmin?.accountStatus == `INACTIVE`
+          ) {
+            setErrorLoginMessage(
+              "Your account is currently inactive. You'll be notified with the update on email. Please contact help@cgts.com for any other queries!"
+            );
+            setErrorLogin(true);
+            signOut(auth);
+          } else if (
+            res?.data?.data?.signInAdmin?.accountStatus == `SUSPENDED`
+          ) {
+            setErrorLoginMessage(
+              "Your account has been suspended. Please contact admin@cgts.com for further assistance!"
+            );
+            setErrorLogin(true);
+            signOut(auth);
+          } else if (res?.data?.data?.signInAdmin?.accountStatus == `ACTIVE`) {
+            setSuccessLogin(true);
+            router.push("/");
+          }
+        })
+        .catch((error) => {
+          setErrorLogin(true);
+          signOut(auth);
+        });
+    } catch (error) {
+      console.log("CONSOLE LOG IN SIGN IN ADMIN CATCH::::: ", error);
+      setErrorLogin(true);
+      signOut(auth);
     }
   };
 
@@ -96,7 +186,7 @@ const SignIn = (req) => {
                       placeholder="Enter email here"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      required="true"
+                      required={true}
                     />
                   </Form.Group>
 
@@ -106,17 +196,22 @@ const SignIn = (req) => {
                     <Form.Control
                       type="password"
                       name="password"
-                      placeholder="**************"
+                      placeholder="Enter password here"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      required="true"
+                      required={true}
+                      autoComplete="on"
                     />
                   </Form.Group>
 
                   {/* Checkbox */}
                   <div className="d-lg-flex justify-content-between align-items-center mb-4">
                     <Form.Check type="checkbox" id="rememberme">
-                      <Form.Check.Input type="checkbox" />
+                      <Form.Check.Input
+                        type="checkbox"
+                        checked={rememberMe}
+                        onClick={(e) => setRememberMe(!rememberMe)} 
+                      />
                       <Form.Check.Label>Remember me</Form.Check.Label>
                     </Form.Check>
                   </div>
@@ -142,7 +237,9 @@ const SignIn = (req) => {
                   {/* Admin approval notice after email verification */}
                   {activationRedirect && (
                     <Alert variant="info">
-                      <Alert.Heading>Email Verified Successfully!</Alert.Heading>
+                      <Alert.Heading>
+                        Email Verified Successfully!
+                      </Alert.Heading>
                       <p>
                         After email verification your account also requires
                         approval by our admins before you can access the

@@ -6,14 +6,15 @@ import Link from "next/link";
 import { auth } from "components/firebase";
 import {
   createUserWithEmailAndPassword,
-  onAuthStateChanged,
   sendEmailVerification,
+  signOut,
 } from "firebase/auth";
 
 // import hooks
 import useMounted from "hooks/useMounted";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import axios from "axios";
 
 const SignUp = () => {
   const hasMounted = useMounted();
@@ -34,15 +35,21 @@ const SignUp = () => {
   };
 
   useEffect(() => {
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        router.push("/");
-      } else {
-      }
-    });
-  });
+    const user = auth?.currentUser;
+    if (
+      user?.emailVerified &&
+      user?.emailVerified != undefined &&
+      user?.emailVerified != null &&
+      user != null
+    ) {
+      router.push("/");
+    } else {
+      signOut(auth);
+    }
+  }, [router]);
 
   const handleSubmit = async (e) => {
+    console.log("Calling handleSubmit");
     e.preventDefault();
 
     setPasswordMatch(true);
@@ -55,10 +62,12 @@ const SignUp = () => {
         await createUserWithEmailAndPassword(auth, email, password)
           .then((userCredential) => {
             // Signed up
-            sendVerificationEmail(userCredential.user);
+            console.log("Sign up done on firebase",userCredential?.user?.accessToken);
+            saveSignUpData(e, userCredential?.user);
           })
           .catch((error) => {
             // Error in Signing up
+            console.log("ERROR CAUGHT ::::::: ", error);
             if (error?.code == "auth/email-already-in-use") {
               setErrorRegisteringMessage("Email already in use!");
             }
@@ -66,6 +75,7 @@ const SignUp = () => {
             setErrorRegistering(true);
           });
       } catch (error) {
+        console.log("ERROR CAUGHT ::::::: ", error);
         setErrorRegistering(true);
       }
     } else {
@@ -73,12 +83,64 @@ const SignUp = () => {
     }
   };
 
-  const sendVerificationEmail = async (user) => {
+  const saveSignUpData = async (e, user) => {
+    console.log("Saving data on mongodb via backend");
+
+    e.preventDefault();
+
+    try {
+      let headers = {
+        "FirebaseToken": `${user?.accessToken}`,
+      };
+
+      await axios({
+        url: `http://localhost:8081/graphql`,
+        method: "POST",
+        headers: headers,
+        data: {
+          query: `
+          mutation {
+            signUpAdmin(fullname : "${fullname}", email : "${email}") {
+              id
+              fullname
+              email
+              accountStatus
+              role
+            }
+          }
+          `,
+        },
+      })
+        .then(async (res) => {
+          if (res?.data?.error) {
+            console.log("ERROR CAUGHT ::::::: ", res?.data?.error);
+            setErrorRegistering(true);
+          } else if (res?.data?.data?.signUpAdmin?.id != null) {
+            console.log("Saving data in mongodb successful");
+            sendVerificationEmail(user, e);
+          }
+        })
+        .catch((error) => {
+          console.log("ERROR CAUGHT ::::::: ", error);
+          setErrorRegistering(true);
+        });
+    } catch (error) {
+      console.log("ERROR CAUGHT ::::::: ", error);
+      setErrorRegistering(true);
+    }
+  };
+
+  const sendVerificationEmail = async (user, e) => {
+    console.log("Sending verification email");
+
+    e.preventDefault();
+
     try {
       await sendEmailVerification(user, actionCodeSettings)
         .then((data) => {
           // Email sent
-          console.log("Verification email : ", data);
+          console.log("Verification mail sent");
+
           setSuccessRegistering(true);
           setShowEmail(email);
           setFullname("");
@@ -87,9 +149,11 @@ const SignUp = () => {
           setConfirmPassword("");
         })
         .catch((error) => {
+          console.log("ERROR CAUGHT ::::::: ", error);
           setErrorRegistering(true);
         });
     } catch (error) {
+      console.log("ERROR CAUGHT ::::::: ", error);
       setErrorRegistering(true);
     }
   };
@@ -107,6 +171,7 @@ const SignUp = () => {
                 Please enter your user information.
               </p>
             </div>
+
             {/* Form */}
             {hasMounted && (
               <Form onSubmit={(e) => handleSubmit(e)}>
@@ -118,8 +183,8 @@ const SignUp = () => {
                     name="fullname"
                     value={fullname}
                     onChange={(e) => setFullname(e.target.value)}
-                    placeholder="Fullname"
-                    required="true"
+                    placeholder="Enter fullname"
+                    required={true}
                   />
                 </Form.Group>
 
@@ -131,8 +196,8 @@ const SignUp = () => {
                     name="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Enter address here"
-                    required="true"
+                    placeholder="Enter email address"
+                    required={true}
                   />
                 </Form.Group>
 
@@ -144,8 +209,9 @@ const SignUp = () => {
                     name="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="**************"
-                    required="true"
+                    placeholder="Enter password"
+                    required={true}
+                    autoComplete="on"
                   />
                 </Form.Group>
 
@@ -157,8 +223,9 @@ const SignUp = () => {
                     name="confirm-password"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder="**************"
-                    required="true"
+                    placeholder="Re-enter password"
+                    required={true}
+                    autoComplete="on"
                   />
                 </Form.Group>
 
