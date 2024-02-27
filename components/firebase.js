@@ -6,15 +6,17 @@ import {getAuth} from "firebase/auth"
 
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+
 const firebaseConfig = {
-  apiKey: "AIzaSyDLGbWbFNuAljfKCK4BR5ATxjviVYU-87E",
-  authDomain: "cgts-ayratech.firebaseapp.com",
-  projectId: "cgts-ayratech",
-  storageBucket: "cgts-ayratech.appspot.com",
-  messagingSenderId: "858001283003",
-  appId: "1:858001283003:web:8a53a7037569648296569e",
-  measurementId: "G-SYJ15RNF69"
+  apiKey: "AIzaSyCLCHEXOHPUu5_JPQQIZmnDDFM2DfMECQU",
+  authDomain: "react-auth-app-1.firebaseapp.com",
+  projectId: "react-auth-app-1",
+  storageBucket: "react-auth-app-1.appspot.com",
+  messagingSenderId: "351437768049",
+  appId: "1:351437768049:web:18beef9da930880ec6e2d0"
 };
+// Deployment script to be run in terminal
+// firebase deploy --only hosting:lokendra-firebase-auth-app
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);

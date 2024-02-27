@@ -53,6 +53,7 @@ const SignIn = (req) => {
 
   //Sign in function
   const handleSubmit = async (e) => {
+
     e.preventDefault();
 
     if (rememberMe) {
@@ -74,7 +75,7 @@ const SignIn = (req) => {
           // Signed in
           if (user?.user?.emailVerified == false) {
             setErrorLoginMessage(
-              "Verify your email to continue your sign up process!"
+              "Verify your email before Sign In!"
             );
             setErrorLogin(true);
             return;
@@ -84,7 +85,6 @@ const SignIn = (req) => {
         })
         .catch((error) => {
           // Error Signing in
-          console.log("ERROR CODE : ", error);
           if (error?.code == "auth/invalid-credential") {
             setErrorLoginMessage("Invalid Credentials!");
           } else if (error?.code == "auth/too-many-requests") {
@@ -111,25 +111,21 @@ const SignIn = (req) => {
         headers: headers,
         data: {
           query: `
-          query {
-            signInAdmin {
-              id
-              uid
-              fullname
-              email
-              accountStatus
-              role
-            }
-          }
+          query SignInUser {
+            signInUser
+        }
           `,
         },
       })
         .then(async (res) => {
-          if (res?.data?.error) {
+          if (res?.data?.errors) {
             setErrorLogin(true);
             signOut(auth);
-          } else if (
-            res?.data?.data?.signInAdmin?.accountStatus == `INACTIVE`
+          } else if (res?.data?.data?.signInUser == null){
+            setErrorLogin(true);
+            signOut(auth);
+          }else if (
+            res?.data?.data?.signInUser == `INACTIVE`
           ) {
             setErrorLoginMessage(
               "Your account is currently inactive. You'll be notified with the update on email. Please contact help@cgts.com for any other queries!"
@@ -137,14 +133,14 @@ const SignIn = (req) => {
             setErrorLogin(true);
             signOut(auth);
           } else if (
-            res?.data?.data?.signInAdmin?.accountStatus == `SUSPENDED`
+            res?.data?.data?.signInUser == `SUSPENDED`
           ) {
             setErrorLoginMessage(
               "Your account has been suspended. Please contact admin@cgts.com for further assistance!"
             );
             setErrorLogin(true);
             signOut(auth);
-          } else if (res?.data?.data?.signInAdmin?.accountStatus == `ACTIVE`) {
+          } else if (res?.data?.data?.signInUser == `ACTIVE`) {
             setSuccessLogin(true);
             router.push("/");
           }

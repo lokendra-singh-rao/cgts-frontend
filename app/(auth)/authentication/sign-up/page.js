@@ -49,7 +49,6 @@ const SignUp = () => {
   }, [router]);
 
   const handleSubmit = async (e) => {
-    console.log("Calling handleSubmit");
     e.preventDefault();
 
     setPasswordMatch(true);
@@ -62,12 +61,10 @@ const SignUp = () => {
         await createUserWithEmailAndPassword(auth, email, password)
           .then((userCredential) => {
             // Signed up
-            console.log("Sign up done on firebase",userCredential?.user?.accessToken);
             saveSignUpData(e, userCredential?.user);
           })
           .catch((error) => {
             // Error in Signing up
-            console.log("ERROR CAUGHT ::::::: ", error);
             if (error?.code == "auth/email-already-in-use") {
               setErrorRegisteringMessage("Email already in use!");
             }
@@ -75,7 +72,6 @@ const SignUp = () => {
             setErrorRegistering(true);
           });
       } catch (error) {
-        console.log("ERROR CAUGHT ::::::: ", error);
         setErrorRegistering(true);
       }
     } else {
@@ -84,8 +80,6 @@ const SignUp = () => {
   };
 
   const saveSignUpData = async (e, user) => {
-    console.log("Saving data on mongodb via backend");
-
     e.preventDefault();
 
     try {
@@ -99,39 +93,30 @@ const SignUp = () => {
         headers: headers,
         data: {
           query: `
-          mutation {
-            signUpAdmin(fullname : "${fullname}", email : "${email}") {
-              id
-              fullname
-              email
-              accountStatus
-              role
-            }
+          mutation SignUpUser {
+            signUpUser(fullname : "${fullname}", email : "${email}")
           }
           `,
         },
       })
         .then(async (res) => {
-          if (res?.data?.error) {
-            console.log("ERROR CAUGHT ::::::: ", res?.data?.error);
+          if (res?.data?.errors) {
             setErrorRegistering(true);
-          } else if (res?.data?.data?.signUpAdmin?.id != null) {
-            console.log("Saving data in mongodb successful");
+          } else if (res?.data?.data?.signUpUser == null) {
+            setErrorRegistering(true);
+          } else if (res?.data?.data?.signUpUser != null) {
             sendVerificationEmail(user, e);
           }
         })
         .catch((error) => {
-          console.log("ERROR CAUGHT ::::::: ", error);
           setErrorRegistering(true);
         });
     } catch (error) {
-      console.log("ERROR CAUGHT ::::::: ", error);
       setErrorRegistering(true);
     }
   };
 
   const sendVerificationEmail = async (user, e) => {
-    console.log("Sending verification email");
 
     e.preventDefault();
 
@@ -139,7 +124,6 @@ const SignUp = () => {
       await sendEmailVerification(user, actionCodeSettings)
         .then((data) => {
           // Email sent
-          console.log("Verification mail sent");
 
           setSuccessRegistering(true);
           setShowEmail(email);
@@ -149,11 +133,9 @@ const SignUp = () => {
           setConfirmPassword("");
         })
         .catch((error) => {
-          console.log("ERROR CAUGHT ::::::: ", error);
           setErrorRegistering(true);
         });
     } catch (error) {
-      console.log("ERROR CAUGHT ::::::: ", error);
       setErrorRegistering(true);
     }
   };
