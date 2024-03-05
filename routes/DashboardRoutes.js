@@ -32,6 +32,12 @@ export const DashboardMenu = [
 	},
 	{
 		id: uuid(),
+		title: 'Cctv Locations',
+		icon: 'map',
+		link: '/map'
+	},
+	{
+		id: uuid(),
 		title: 'LAYOUTS & PAGES',
 		grouptitle: true
 	},

@@ -15,6 +15,7 @@ import CctvDetails from "sub-components/dashboard/ActiveProjects";
 import { auth } from "components/firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import { useRouter } from "next/navigation";
+import "../../styles/_user.scss"
 
 const Home = () => {
 
