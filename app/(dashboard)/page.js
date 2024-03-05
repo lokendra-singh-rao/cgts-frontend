@@ -10,6 +10,7 @@ import { onAuthStateChanged, signOut } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import Loading from "app/(auth)/authentication/loading";
+import "../../styles/_user.scss"
 
 const Home = () => {
     
